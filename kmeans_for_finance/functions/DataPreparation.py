@@ -9,20 +9,12 @@ import pandas as pd
 #print(today)
 #print(yesterday)
 # days for market indices
-#start_date = "2022-01-01"
 #end_date = yesterday #this is only to prove the model
 #end_date = today
 
-#days for crypto currencies 
-#cripto_start_date = "01-01-2022"
-#cripto_end_date = str(yesterday.day)+ "-" + str(yesterday.month) + "-" +  str(yesterday.year)
 
 absolute_path = os.path.abspath(os.path.dirname(__file__))
-
-#df = yf.download("AAPL", period = 'max', interval="1m") # this is all the information of the market in the interval of time the interval is open 
-#df = df.reset_index()
-#print(df.head())
-#print(df.tail())
+#print(absolute_path)
 ###############################
 ###############################
 ###############################
@@ -58,18 +50,18 @@ def calling_data(name: str, start_date:str, end_date:str, interval:str) -> pd.Da
 
 def interval_maker(start_date:str, end_date:str):
     """
-    Esta funcion permite obtener los extremos de los intervalos de tiempo para despues
-    utilizarlos para recuperar la informacion, Notemos que solo se puede ir 30 dias atras
-    con intervalos de 1 minuto de muestreo.
+    This function allows you to obtain the extremes of the time intervals 
+    and then use them to recover the information. Note that you can only 
+    go back 30 days with 1-minute sampling intervals.
 
     Parameters:
-    - start_date: the first day to take acount the information ("yyyy-mm,dd").  
-    - end_date: the last day that will be considered ("yyyy-mm,dd"), it will return the 
-                information until the last data of  "end_date - 1 day".
+        - start_date: the first day to take acount the information ("yyyy-mm,dd").  
+        - end_date: the last day that will be considered ("yyyy-mm,dd"), it will return the 
+                    information until the last data of  "end_date - 1 day".
 
     Return:
-    - interval_beginnings
-    - interval_ends  
+        - interval_beginnings
+        - interval_ends  
     """
     start_day_datetype = datetime.strptime(start_date, '%Y-%m-%d')#.date()
     end_day_datetype = datetime.strptime(end_date, '%Y-%m-%d')#.date()
@@ -77,7 +69,7 @@ def interval_maker(start_date:str, end_date:str):
     interval_beginnings = [start_day_datetype]
     interval_ends = []
 
-    for i in range(1,30):
+    for i in range(1,35):
         interval_day = start_day_datetype + timedelta(days = i)
         if interval_day <= end_day_datetype:
             if (i+1)%7 == 0:
@@ -91,17 +83,61 @@ def interval_maker(start_date:str, end_date:str):
             interval_end = end_day_datetype + timedelta(days = 1)
             interval_ends.append(interval_end)
             break
-    return(interval_beginnings, interval_ends)
+    return(interval_beginnings[0:len(interval_ends)], interval_ends)
         
 
-inicio, final = interval_maker("2024-01-08", "2024-02-13")      
+#inicio, final = interval_maker("2024-01-08", "2024-02-13")      
+#print(inicio)
+#print(final)
 
-print(inicio)
-print(final)
-
-   
-
-
+##########################
+##########################
 
 
+def complete_data_by_minute(name:str, start_day:str, end_day:str) -> pd.DataFrame:
+    """
+    This function returns the complete information of value markets by minute 
+    of the interval o time provided (les thn 30 days).
+
+    Parameters:
+        - name: This is the identificacion as it apears in the stock market.
+        - start_date: the first day to take acount the information ("yyyy-mm,dd").  
+        - end_date: the last day that will be considered ("yyyy-mm,dd"), it will return the 
+                    information until the last data of  "end_date - 1 day".
+    
+    Returns: The function will return a pandas data frame with the following columns.
+        - Datetime: Date of time of the value.        
+        - Open: the value at the begining of the interval of time.
+        - High: the highest value in the interval of time.         
+        - Low: the lowest value in the interval of time.       
+        - Close: the value at the end of the interval of time.   
+        - Adj Close: Adjusted close is the closing price after adjustments for all 
+                     applicable splits and dividend distributions in the interval of time.
+        - Volume: number of a stocks shares that are traded in the interval of time.
+    """
+    inicio, final = interval_maker(start_day, end_day )
+    main_df = pd.DataFrame(columns=['Datetime', 'Open', 'High', 'Low', 'Close', 'Adj Close', 'Volume'])
+    for i in range(0, len(inicio)):
+        if i != len(inicio) - 1:
+            interval_start = str(inicio[i].date())
+            interval_end = str(inicio[i+1].date())
+            interval_df = calling_data(name, interval_start, interval_end, "1m")
+        else:
+            interval_start = str(inicio[i].date())
+            interval_end = str(final[i].date()) 
+            interval_df = calling_data(name, interval_start, interval_end, "1m")
+        main_df = pd.concat([main_df, interval_df], axis=0, ignore_index=True)
+    main_df = main_df.rename(columns={
+        'Datetime': name +' Datetime', 
+        'Open': name +' Open', 
+        'High': name +' High', 
+        'Low': name +' Low', 
+        'Close': name +' Close', 
+        'Adj Close': name +' Adj Close', 
+        'Volume': name +' Volume'
+        })
+    return(main_df)
+
+
+#print(complete_data_by_minute("AAPL", "2024-01-10", "2024-02-08"))
 
