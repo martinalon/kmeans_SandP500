@@ -14,6 +14,7 @@ import pandas as pd
 
 
 absolute_path = os.path.abspath(os.path.dirname(__file__))
+
 #print(absolute_path)
 ###############################
 ###############################
@@ -128,7 +129,7 @@ def complete_data_by_minute(name:str, start_day:str, end_day:str) -> pd.DataFram
             interval_df = calling_data(name, interval_start, interval_end, "1m")
         main_df = pd.concat([main_df, interval_df], axis=0, ignore_index=True)
     main_df = main_df.rename(columns={
-        'Datetime': name +' Datetime', 
+        'Datetime': 'Datetime', 
         'Open': name +' Open', 
         'High': name +' High', 
         'Low': name +' Low', 
@@ -137,7 +138,41 @@ def complete_data_by_minute(name:str, start_day:str, end_day:str) -> pd.DataFram
         'Volume': name +' Volume'
         })
     return(main_df)
+#print(complete_data_by_minute("AAPL", "2024-01-15", "2024-02-12"))
 
 
-#print(complete_data_by_minute("AAPL", "2024-01-10", "2024-02-08"))
 
+def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_path:str):
+    companies_df = pd.read_csv(main_path + "/data/companies.csv")
+    symbols = companies_df["Simbolo"]
+    open_df = pd.DataFrame()
+    low_df = pd.DataFrame()
+    high_df = pd.DataFrame()
+    close_df = pd.DataFrame()
+
+    for i in symbols:
+        if i == "AAPL":
+            stock_marcket = complete_data_by_minute(i, start_day, end_day)
+            open_df[["Datetime", "AAPL Open"]] = stock_marcket[["Datetime", "AAPL Open"]]
+            high_df[["Datetime", "AAPL High"]] = stock_marcket[["Datetime", "AAPL High"]]
+            low_df[["Datetime", "AAPL Low"]] = stock_marcket[["Datetime", "AAPL Low"]]
+            close_df[["Datetime", "AAPL Close"]] = stock_marcket[["Datetime", "AAPL Close"]]
+            
+        else:
+            stock_marcket = complete_data_by_minute(i, start_day, end_day)
+            if len(stock_marcket)> 0:
+                open_df = open_df.merge(stock_marcket[["Datetime", i + " Open"]], on="Datetime", how='left')
+                high_df = high_df.merge(stock_marcket[["Datetime", i + " High"]], on="Datetime", how='left')
+                low_df = low_df.merge(stock_marcket[["Datetime", i + " Low"]], on="Datetime", how='left')
+                close_df = close_df.merge(stock_marcket[["Datetime", i + " Close"]], on="Datetime", how='left') 
+            else:
+                pass
+    open_df.to_csv(target_path + "/Open_df.csv", header=True, index=False)
+    high_df.to_csv(target_path + "/High_df.csv", header=True, index=False)
+    low_df.to_csv(target_path + "/Low_df.csv", header=True, index=False)
+    close_df.to_csv(target_path + "/Close_df.csv", header=True, index=False)
+
+main_path = os.path.dirname(os.getcwd())
+data_path = main_path + "/data"
+
+complate_stock_marcket("2024-01-15", "2024-02-12", main_path, data_path)
