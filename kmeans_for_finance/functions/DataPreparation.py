@@ -2,6 +2,7 @@ import yfinance as yf
 from datetime import date,timedelta, datetime
 import os
 import pandas as pd
+from tqdm import tqdm
 
 #today = date.today()
 #yesterday = today - timedelta(days = 1)
@@ -102,8 +103,8 @@ def complete_data_by_minute(name:str, start_day:str, end_day:str) -> pd.DataFram
 
     Parameters:
         - name: This is the identificacion as it apears in the stock market.
-        - start_date: the first day to take acount the information ("yyyy-mm,dd").  
-        - end_date: the last day that will be considered ("yyyy-mm,dd"), it will return the 
+        - start_day: the first day to take acount the information ("yyyy-mm,dd").  
+        - end_day: the last day that will be considered ("yyyy-mm,dd"), it will return the 
                     information until the last data of  "end_date - 1 day".
     
     Returns: The function will return a pandas data frame with the following columns.
@@ -142,7 +143,34 @@ def complete_data_by_minute(name:str, start_day:str, end_day:str) -> pd.DataFram
 
 
 
-def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_path:str):
+def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_path:str, complete_extraction:bool):
+    """ 
+    This function allows you to create or update market databases with the information of all companies in the 
+    S&P 500 index. It is necessary to verify the last day added to the database to follow a chronological order 
+    when updating the databases.
+
+    If the database is created from scratch, then you just have to take into account that the first day to be 
+    considered has to be within the first 30 days of the current day.
+
+    Parameters:
+        - start_day: the first day to take acount the information ("yyyy-mm,dd").  
+        - end_day: the last day that will be considered ("yyyy-mm,dd"), it will return the 
+                    information until the last data of  "end_date - 1 day".
+        - main_path: this is the main path of the proyect.
+        - target_path: this is the path where we want the databases to be stored. 
+        - complete_extraction: 
+            If True: will create new csv files in the traget file. If there are csv files, will rewrite the 
+                    documents
+            If False: will uodate the csv files that should already be created in the target path. 
+
+    Returns: The function will save the following 4 csv in the target_path or .
+        - Open_df.csv: the value at the begining of each minute for all companies.
+        - High: the highest value in each minute for all companies.         
+        - Low: the lowest value in each minute for all companies.       
+        - Close: the value at the end of  each minute for all companies.
+
+
+    """
     companies_df = pd.read_csv(main_path + "/data/companies.csv")
     symbols = companies_df["Simbolo"]
     open_df = pd.DataFrame()
@@ -150,7 +178,7 @@ def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_pat
     high_df = pd.DataFrame()
     close_df = pd.DataFrame()
 
-    for i in symbols:
+    for i in tqdm(symbols):
         if i == "AAPL":
             stock_marcket = complete_data_by_minute(i, start_day, end_day)
             open_df[["Datetime", "AAPL Open"]] = stock_marcket[["Datetime", "AAPL Open"]]
@@ -167,12 +195,51 @@ def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_pat
                 close_df = close_df.merge(stock_marcket[["Datetime", i + " Close"]], on="Datetime", how='left') 
             else:
                 pass
-    open_df.to_csv(target_path + "/Open_df.csv", header=True, index=False)
-    high_df.to_csv(target_path + "/High_df.csv", header=True, index=False)
-    low_df.to_csv(target_path + "/Low_df.csv", header=True, index=False)
-    close_df.to_csv(target_path + "/Close_df.csv", header=True, index=False)
+    if complete_extraction == True:
+        open_df.to_csv(target_path + "/Open_df.csv", header=True, index=False)
+        high_df.to_csv(target_path + "/High_df.csv", header=True, index=False)
+        low_df.to_csv(target_path + "/Low_df.csv", header=True, index=False)
+        close_df.to_csv(target_path + "/Close_df.csv", header=True, index=False)
+        print("The data bases were created successfully")
+    else:
+        old_open_df = pd.read_csv(target_path + "/Open_df.csv")
+        old_high_df = pd.read_csv(target_path + "/High_df.csv")
+        old_low_df = pd.read_csv(target_path + "/Low_df.csv")
+        old_close_df = pd.read_csv(target_path + "/Close_df.csv")
+
+        old_open_df = pd.concat([old_open_df, open_df], axis=0, ignore_index=True)
+        old_high_df = pd.concat([old_high_df, high_df], axis=0, ignore_index=True)
+        old_low_df = pd.concat([old_low_df, low_df], axis=0, ignore_index=True)
+        old_close_df = pd.concat([old_close_df, close_df], axis=0, ignore_index=True)
+
+        old_open_df.to_csv(target_path + "/Open_df.csv", header=True, index=False)
+        old_high_df.to_csv(target_path + "/High_df.csv", header=True, index=False)
+        old_low_df.to_csv(target_path + "/Low_df.csv", header=True, index=False)
+        old_close_df.to_csv(target_path + "/Close_df.csv", header=True, index=False)
+        print("The data bases were updated successfully")
+    
+
 
 main_path = os.path.dirname(os.getcwd())
 data_path = main_path + "/data"
+#complate_stock_marcket("2024-02-13", "2024-02-16", main_path, data_path, complete_extraction=False)
 
-complate_stock_marcket("2024-01-15", "2024-02-12", main_path, data_path)
+
+def last_day_in_bases(data_base_path:str) -> str:
+    """
+    This function helps to know the last day in the data base
+    Parameters:
+        - data_base_path: the full path to the csv file
+    
+    Returns: gives you a string with the last day in the csv file
+             in the format yyyy-mm-dd.
+
+    """
+    df = pd.read_csv(data_base_path)
+    last_datatime = df.tail()["Datetime"].to_list()[-1]
+    last_day = last_datatime[0:10]
+    return(last_day)
+
+data_base_path = data_path + "/Open_df.csv"
+print(last_day_in_bases(data_base_path))
+
