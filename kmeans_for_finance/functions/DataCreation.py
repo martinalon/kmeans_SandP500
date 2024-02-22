@@ -240,6 +240,6 @@ def last_day_in_bases(data_base_path:str) -> str:
     last_day = last_datatime[0:10]
     return(last_day)
 
-data_base_path = data_path + "/Open_df.csv"
-print(last_day_in_bases(data_base_path))
+#data_base_path = data_path + "/Open_df.csv"
+#print(last_day_in_bases(data_base_path))
 
