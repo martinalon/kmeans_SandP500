@@ -141,7 +141,10 @@ def complete_data_by_minute(name:str, start_day:str, end_day:str) -> pd.DataFram
     return(main_df)
 #print(complete_data_by_minute("AAPL", "2024-01-15", "2024-02-12"))
 
-
+##############################################################
+##############################################################
+##############################################################
+##############################################################
 
 def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_path:str, complete_extraction:bool):
     """ 
@@ -220,8 +223,8 @@ def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_pat
     
 
 
-main_path = os.path.dirname(os.getcwd())
-data_path = main_path + "/data"
+#main_path = os.path.dirname(os.getcwd())
+#data_path = main_path + "/data"
 #complate_stock_marcket("2024-02-13", "2024-02-16", main_path, data_path, complete_extraction=False)
 
 
