@@ -1334,6 +1334,17 @@ tzdata = {version = "*", markers = "platform_system == \"Windows\""}
 devenv = ["check-manifest", "pytest (>=4.3)", "pytest-cov", "pytest-mock (>=3.3)", "zest.releaser"]
 
 [[package]]
+name = "unipath"
+version = "1.1"
+description = "Object-oriented alternative to os/os.path/shutil"
+optional = false
+python-versions = "*"
+files = [
+    {file = "Unipath-1.1-py2-none-any.whl", hash = "sha256:e6257e508d8abbfb6ddd8ec357e33589f1f48b1599127f23b017124d90b0fff7"},
+    {file = "Unipath-1.1.tar.gz", hash = "sha256:09839adcc72e8a24d4f76d63656f30b5a1f721fc40c9bcd79d8c67bdd8b47dae"},
+]
+
+[[package]]
 name = "urllib3"
 version = "2.2.0"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -1470,4 +1481,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "576702e9c246a2ea54d1ab4a90af915473d7679736b01b8ad5810c0c16fe9f24"
+content-hash = "94801f5d32c45685d786bab6698e45942cff8d8c534bc597eefb89bd97a020bc"

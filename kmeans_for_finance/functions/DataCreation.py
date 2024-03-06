@@ -4,14 +4,6 @@ import os
 import pandas as pd
 from tqdm import tqdm
 
-#today = date.today()
-#yesterday = today - timedelta(days = 1)
-
-#print(today)
-#print(yesterday)
-# days for market indices
-#end_date = yesterday #this is only to prove the model
-#end_date = today
 
 
 absolute_path = os.path.abspath(os.path.dirname(__file__))

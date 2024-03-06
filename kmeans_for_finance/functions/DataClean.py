@@ -1,15 +1,15 @@
 import os
 import pandas as pd
-from DataCreation import last_day_in_bases,complate_stock_marcket
+#from functions.DataCreation import last_day_in_bases,complate_stock_marcket
 import math
 import numpy as np
 from tqdm import tqdm
 import multiprocessing
 import csv
 
-main_path = os.path.dirname(os.getcwd())
-data_path = main_path + "/data"
-close_df_path = data_path + "/Close_df.csv"
+#main_path = os.path.dirname(os.getcwd())
+#data_path = main_path + "/data"
+#close_df_path = data_path + "/Close_df.csv"
 
 #print(last_day_in_bases(close_df_path))
 #complate_stock_marcket("2024-02-22", "2024-02-28", main_path, data_path, complete_extraction=False)
@@ -214,7 +214,7 @@ def corr_by_minute(day,market_df, target_path, full_corr):
 
     # this line take the info of the market in the day "i" and resets the index
     close_day = market_df[market_df["Day"] == day].reset_index(drop=True)
-    for j in tqdm(range(0, 35-29)): #,len(close_day)- 29)):
+    for j in tqdm(range(0, len(close_day)- 29)):
         # This line take the 30 concecutive elements by the index
         interval_df = close_day[(close_day.index >= j) & (close_day.index < (j+30))]
         interval_df_clean = inputing_data_2v(interval_df)
@@ -224,7 +224,7 @@ def corr_by_minute(day,market_df, target_path, full_corr):
         
         if full_corr and j == 0:
             columns = (corr_df.columns)
-            with open(target_path+ '/' + day +'.csv', 'a') as f:
+            with open(target_path+ '/' + day +'.csv', 'w') as f:
                 writer = csv.writer(f)
                 # write the header
                 writer.writerow(columns)
@@ -248,13 +248,11 @@ class cleaning:
     def Parameters_Pcorr(self, day):
         main_path = os.path.dirname(os.getcwd())
         data_path = main_path + "/data"
+        coorelations_path = data_path + "/Correlations_by_day"
         market_path = data_path + "/" + self.feature + "_df.csv"
         market_df = pd.read_csv(market_path)
         market_df[["Day", "Time"]] = market_df['Datetime'].str.split(" ", n=1, expand=True) 
-        #days = market_df["Day"].unique()
-        #print(market_df)
-        #corr_by_minute(days[0])
-        corr_by_minute(day, market_df = market_df, target_path = data_path, full_corr = self.full_corr)
+        corr_by_minute(day, market_df = market_df, target_path = coorelations_path, full_corr = self.full_corr)
          
     def Parallel_correlation(self):
         main_path = os.path.dirname(os.getcwd())
@@ -265,10 +263,10 @@ class cleaning:
         days = market_df["Day"].unique()
         pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
         result = pool.map(self.Parameters_Pcorr, days)
-        print("it is done")
+        print("The documents have been created or actualized")
 
-x = cleaning('Close', True)
-x.Parallel_correlation()
+#x = cleaning('Close', True)
+#x.Parallel_correlation()
 #print(x.full_corr)
 
 
