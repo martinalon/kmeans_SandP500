@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-#from functions.DataCreation import last_day_in_bases,complate_stock_marcket
+from functions.DataCreation import last_day_in_bases,complate_stock_marcket
 import math
 import numpy as np
 from tqdm import tqdm
@@ -240,27 +240,29 @@ def corr_by_minute(day,market_df, target_path, full_corr):
 #corr_by_minute(days[0])
 
 class cleaning:
-    def __init__(self, feature, full_corr):
+    def __init__(self,  main_path:str, feature:str, full_corr:bool):
         self.feature = feature
         self.full_corr = full_corr
-    
-    
+        self.main_path = main_path
+        self.data_path = main_path + "/data"
+        self.coorelations_path = self.data_path + "/Correlations_by_day"
+        self.market_path = self.data_path + "/" + self.feature + "_df.csv"
+        self.market_ld = last_day_in_bases(self.market_path)
+ 
     def Parameters_Pcorr(self, day):
-        main_path = os.path.dirname(os.getcwd())
-        data_path = main_path + "/data"
-        coorelations_path = data_path + "/Correlations_by_day"
-        market_path = data_path + "/" + self.feature + "_df.csv"
-        market_df = pd.read_csv(market_path)
+        market_df = pd.read_csv(self.market_path)
         market_df[["Day", "Time"]] = market_df['Datetime'].str.split(" ", n=1, expand=True) 
-        corr_by_minute(day, market_df = market_df, target_path = coorelations_path, full_corr = self.full_corr)
+        corr_by_minute(day, market_df = market_df, target_path = self.coorelations_path, full_corr = self.full_corr)
          
     def Parallel_correlation(self):
-        main_path = os.path.dirname(os.getcwd())
-        data_path = main_path + "/data"
-        market_path = data_path + "/" + self.feature + "_df.csv"
-        market_df = pd.read_csv(market_path)
+        market_df = pd.read_csv(self.market_path)
         market_df[["Day", "Time"]] = market_df['Datetime'].str.split(" ", n=1, expand=True)
-        days = market_df["Day"].unique()
+        if self.full_corr:
+            days = market_df["Day"].unique().tolist()
+        else:
+            days = market_df["Day"].unique().tolist()
+            days = [x for x in days if x > self.market_ld]
+        
         pool = multiprocessing.Pool(processes=multiprocessing.cpu_count())
         result = pool.map(self.Parameters_Pcorr, days)
         print("The documents have been created or actualized")
