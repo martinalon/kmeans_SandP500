@@ -138,7 +138,7 @@ def complete_data_by_minute(name:str, start_day:str, end_day:str) -> pd.DataFram
 ##############################################################
 ##############################################################
 
-def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_path:str, complete_extraction:bool):
+def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_path:str, complete_extraction:str):
     """ 
     This function allows you to create or update market databases with the information of all companies in the 
     S&P 500 index. It is necessary to verify the last day added to the database to follow a chronological order 
@@ -190,12 +190,12 @@ def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_pat
                 close_df = close_df.merge(stock_marcket[["Datetime", i + " Close"]], on="Datetime", how='left') 
             else:
                 pass
-    if complete_extraction == True:
+    if complete_extraction == "True":
         open_df.to_csv(target_path + "/Open_df.csv", header=True, index=False)
         high_df.to_csv(target_path + "/High_df.csv", header=True, index=False)
         low_df.to_csv(target_path + "/Low_df.csv", header=True, index=False)
         close_df.to_csv(target_path + "/Close_df.csv", header=True, index=False)
-        print("The data bases were created successfully")
+        return("The data bases were created successfully")
     else:
         old_open_df = pd.read_csv(target_path + "/Open_df.csv")
         old_high_df = pd.read_csv(target_path + "/High_df.csv")
@@ -211,7 +211,7 @@ def complate_stock_marcket(start_day:str, end_day:str, main_path:str, target_pat
         old_high_df.to_csv(target_path + "/High_df.csv", header=True, index=False)
         old_low_df.to_csv(target_path + "/Low_df.csv", header=True, index=False)
         old_close_df.to_csv(target_path + "/Close_df.csv", header=True, index=False)
-        print("The data bases were updated successfully")
+        return("The data bases were updated successfully")
     
 
 

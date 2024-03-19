@@ -14,6 +14,7 @@ tqdm = "^4.66.2"
 unipath = "^1.1"
 fastapi = "^0.110.0"
 uvicorn = "^0.28.0"
+streamlit = "^1.32.2"
 
 
 [build-system]
